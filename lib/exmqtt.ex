@@ -97,43 +97,44 @@ defmodule ExMQTT do
   """
   @spec start_link(opts) :: {:ok, pid}
   def start_link(opts) do
-    GenServer.start_link(__MODULE__, opts)
+    {name, opts} = Keyword.pop(opts, :procname, __MODULE__)
+    GenServer.start_link(__MODULE__, opts, name: name)
   end
 
   ## Async
 
-  def publish(message, topic, qos) do
-    GenServer.cast(__MODULE__, {:publish, message, topic, qos})
+  def publish(name, message, topic, qos) do
+    GenServer.cast(name, {:publish, message, topic, qos})
   end
 
-  def subscribe(topic, qos) do
-    GenServer.cast(__MODULE__, {:subscribe, topic, qos})
+  def subscribe(name, topic, qos) do
+    GenServer.cast(name, {:subscribe, topic, qos})
   end
 
-  def unsubscribe(topic) do
-    GenServer.cast(__MODULE__, {:unsubscribe, topic})
+  def unsubscribe(name, topic) do
+    GenServer.cast(name, {:unsubscribe, topic})
   end
 
-  def disconnect do
-    GenServer.cast(__MODULE__, :disconnect)
+  def disconnect(name) do
+    GenServer.cast(name, :disconnect)
   end
 
   ## Sync
 
-  def publish_sync(message, topic, qos) do
-    GenServer.call(__MODULE__, {:publish, message, topic, qos})
+  def publish_sync(name, message, topic, qos) do
+    GenServer.call(name, {:publish, message, topic, qos})
   end
 
-  def subscribe_sync(topic, qos) do
-    GenServer.call(__MODULE__, {:subscribe, topic, qos})
+  def subscribe_sync(name, topic, qos) do
+    GenServer.call(name, {:subscribe, topic, qos})
   end
 
-  def unsubscribe_sync(topic) do
-    GenServer.call(__MODULE__, {:unsubscribe, topic})
+  def unsubscribe_sync(name, topic) do
+    GenServer.call(name, {:unsubscribe, topic})
   end
 
-  def disconnect_sync do
-    GenServer.call(__MODULE__, :disconnect)
+  def disconnect_sync(name) do
+    GenServer.call(name, :disconnect)
   end
 
   # ----------------------------------------------------------------------------
