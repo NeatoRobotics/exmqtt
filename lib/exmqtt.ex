@@ -12,7 +12,7 @@ defmodule ExMQTT do
   require Logger
 
   defmodule State do
-    defstruct [:conn_pid, :username, :client_id, :message_handler, :opts, :protocol_version, :reconnect, :subscriptions]
+    defstruct [:conn_pid, :username, :client_id, :message_handler, :opts, :protocol_version, :subscriptions]
   end
 
   @type opts :: [
@@ -48,7 +48,7 @@ defmodule ExMQTT do
     | {:ack_timeout, pos_integer}
     | {:force_ping, boolean}
     | {:properties, %{atom => term}}
-    | {:reconnect, {delay :: non_neg_integer, max_delay :: non_neg_integer}}
+    | {:reconnect, boolean}
     | {:subscriptions, [{topic :: binary, qos :: non_neg_integer}]}
     | {:start_when, {mfa, retry_in :: non_neg_integer}}
   ]
@@ -149,7 +149,6 @@ defmodule ExMQTT do
     {{msg_handler, msg_arg}, opts} = Keyword.pop(opts, :message_handler, {__MODULE__, []})
     {{puback_handler, puback_arg}, opts} = Keyword.pop(opts, :puback_handler, {__MODULE__, []})
     {{publish_handler, pub_arg}, opts} = Keyword.pop(opts, :publish_handler, {__MODULE__, []})
-    {{delay, max_delay}, opts} = Keyword.pop(opts, :reconnect, {2000, 60_000})
     {start_when, opts} = Keyword.pop(opts, :start_when, :now)
     {subscriptions, opts} = Keyword.pop(opts, :subscriptions, [])
 
@@ -164,7 +163,6 @@ defmodule ExMQTT do
       client_id: opts[:client_id],
       message_handler: &apply(msg_handler, :handle_message, [&1, &2, msg_arg]),
       protocol_version: opts[:protocol_version],
-      reconnect: {delay, max_delay},
       subscriptions: subscriptions,
       username: opts[:username],
       opts: [{:msg_handler, handler_functions} | opts]
@@ -199,8 +197,7 @@ defmodule ExMQTT do
         {:noreply, state}
 
       {:error, _reason} ->
-        %{reconnect: {initial_delay, max_delay}} = state
-        delay = retry_delay(initial_delay, max_delay, attempt)
+        delay = retry_delay(2000, 60_000, attempt)
         Logger.debug("[ExMQTT] Unable to connect, retrying in #{delay} ms")
         :timer.sleep(delay)
         {:noreply, state, {:continue, {:connect, attempt + 1}}}
@@ -276,21 +273,6 @@ defmodule ExMQTT do
     {:noreply, state}
   end
 
-  def handle_info({:reconnect, attempt}, %{reconnect: {initial_delay, max_delay}} = state) do
-    Logger.debug("[ExMQTT] Trying to reconnect")
-
-    case connect(state) do
-      {:ok, state} ->
-        Logger.debug("[ExMQTT] Connected #{inspect(state.conn_pid)}")
-        {:noreply, state}
-
-      {:error, _reason} ->
-        delay = retry_delay(initial_delay, max_delay, attempt)
-        Process.send_after(self(), {:reconnect, attempt + 1}, delay)
-        {:noreply, state}
-    end
-  end
-
   def handle_info(msg, state) do
     Logger.warn("[ExMQTT] Unhandled message #{inspect(msg)}")
     {:noreply, state}
@@ -301,8 +283,6 @@ defmodule ExMQTT do
   @impl ExMQTT.DisconnectHandler
   def handle_disconnect({reason_code, properties}, _arg) do
     Logger.warn("[ExMQTT] Disconnect received: reason #{reason_code}, properties: #{inspect(properties)}")
-
-    # Process.send_after(self(), {:reconnect, 0}, 500)
 
     :ok
   end
