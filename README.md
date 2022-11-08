@@ -4,9 +4,9 @@ An Elixir wrapper around the Erlang [`emqtt`](https://github.com/emqx/emqtt) lib
 
 Why this package?
 
- * supports MQTT v3.0, v3.1.1, and v5.0
- * supports clean_session/clean_start
- * simplifies usage to just defining opts and implementing a message handler
+- supports MQTT v3.0, v3.1.1, and v5.0
+- supports clean_session/clean_start
+- simplifies usage to just defining opts and implementing a message handler
 
 ## Installation
 
@@ -16,7 +16,7 @@ The package can be installed by adding `exmqtt` to your list of dependencies in
 ```elixir
 def deps do
   [
-    {:exmqtt, github: "ryanwinchester/exmqtt", branch: "master"}
+    {:exmqtt, github: "NeatoRobotics/exmqtt", branch: "master"}
   ]
 end
 ```
@@ -28,7 +28,7 @@ so you might need to do:
 ```elixir
 def deps do
   [
-    {:exmqtt, github: "ryanwinchester/exmqtt", branch: "master"},
+    {:exmqtt, github: "NeatoRobotics/exmqtt", branch: "master"},
     {:gun, "~> 1.3.0", override: true},
     {:cowlib, "~> 2.6.0", override: true}
   ]
@@ -48,7 +48,8 @@ You can use the `GenServer` or the `Supervisor` like so:
 ```elixir
 ExMQTT.start_link(opts)
 ```
-or 
+
+or
 
 ```elixir
 ExMQTT.Supervisor.start_link(opts)
@@ -113,11 +114,11 @@ ExMQTT.unsubscribe_sync(topic)
 
 **Note:**
 
- * The `opts` are *mostly* the same as [`:emqtt.option()`](https://github.com/emqx/emqtt/blob/783c943f7aa1295b99f4a0c20436978eb6b70053/src/emqtt.erl#L105), but they are different, so use the type defs in this library
- * `opts.ssl_opts` are erlang's [`:ssl.option()`](https://erlang.org/doc/man/ssl.html#type-tls_client_option)
- * `opts.handler_functions` type is defined [here](https://github.com/ryanwinchester/exmqtt/blob/b404a86bc3612b23bb32008776de09efa1fee69c/lib/exmqtt.ex#L13)
- * `opts.start_when` is for controller the GenServer's `handle_continue/2` callback, so you can add an
- init condition. This is handy for example if you need to wait for the network to be ready before you try to connect to the MQTT broker. The value is a tuple `{start_when, retry_in}` where `start_when` is a `{module, function, arguments}` (MFA) tuple for a function that resolves to a `boolean` which determines when we actually finish `init`, and `retry_in` is the time to sleep (in ms) before we try again.
+- The `opts` are _mostly_ the same as [`:emqtt.option()`](https://github.com/emqx/emqtt/blob/783c943f7aa1295b99f4a0c20436978eb6b70053/src/emqtt.erl#L105), but they are different, so use the type defs in this library
+- `opts.ssl_opts` are erlang's [`:ssl.option()`](https://erlang.org/doc/man/ssl.html#type-tls_client_option)
+- `opts.handler_functions` type is defined [here](https://github.com/ryanwinchester/exmqtt/blob/b404a86bc3612b23bb32008776de09efa1fee69c/lib/exmqtt.ex#L13)
+- `opts.start_when` is for controller the GenServer's `handle_continue/2` callback, so you can add an
+  init condition. This is handy for example if you need to wait for the network to be ready before you try to connect to the MQTT broker. The value is a tuple `{start_when, retry_in}` where `start_when` is a `{module, function, arguments}` (MFA) tuple for a function that resolves to a `boolean` which determines when we actually finish `init`, and `retry_in` is the time to sleep (in ms) before we try again.
 
 #### Example `opts` for SSL connection:
 
@@ -144,7 +145,6 @@ ExMQTT.unsubscribe_sync(topic)
   ]
 ]
 ```
-
 
 ### Message Handler module
 
