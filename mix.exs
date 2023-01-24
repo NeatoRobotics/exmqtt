@@ -23,7 +23,8 @@ defmodule ExMQTT.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:emqtt, github: "emqx/emqtt", tag: "1.7.0-rc.2"},
+      {:emqtt,
+       github: "emqx/emqtt", tag: "1.7.0-rc.3", system_env: [{"BUILD_WITHOUT_QUIC", "1"}]},
       {:ex_doc, "~> 0.29", only: :dev, runtime: false}
     ]
   end

@@ -12,46 +12,54 @@ defmodule ExMQTT do
   require Logger
 
   defmodule State do
-    defstruct [:conn_pid, :username, :client_id, :message_handler, :opts, :protocol_version, :subscriptions]
+    defstruct [
+      :conn_pid,
+      :username,
+      :client_id,
+      :message_handler,
+      :opts,
+      :protocol_version,
+      :subscriptions
+    ]
   end
 
   @type opts :: [
-    {:name, atom}
-    | {:owner, pid}
-    | {:message_handler, module}
-    | {:puback_handler, module}
-    | {:publish_handler, module}
-    | {:disconnect_handler, module}
-    | {:host, binary}
-    | {:hosts, [{binary, :inet.port_number()}]}
-    | {:port, :inet.port_number()}
-    | {:tcp_opts, [:gen_tcp.option()]}
-    | {:ssl, boolean}
-    | {:ssl_opts, [:ssl.ssl_option()]}
-    | {:ws_path, binary}
-    | {:connect_timeout, pos_integer}
-    | {:bridge_mode, boolean}
-    | {:client_id, iodata}
-    | {:clean_start, boolean}
-    | {:username, iodata}
-    | {:password, iodata}
-    | {:protocol_version, 3 | 4 | 5}
-    | {:keepalive, non_neg_integer}
-    | {:max_inflight, pos_integer}
-    | {:retry_interval, timeout}
-    | {:will_topic, iodata}
-    | {:will_payload, iodata}
-    | {:will_retain, boolean}
-    | {:will_qos, pos_integer}
-    | {:will_props, %{atom => term}}
-    | {:auto_ack, boolean}
-    | {:ack_timeout, pos_integer}
-    | {:force_ping, boolean}
-    | {:properties, %{atom => term}}
-    | {:reconnect, boolean}
-    | {:subscriptions, [{topic :: binary, qos :: non_neg_integer}]}
-    | {:start_when, {mfa, retry_in :: non_neg_integer}}
-  ]
+          {:name, atom}
+          | {:owner, pid}
+          | {:message_handler, module}
+          | {:puback_handler, module}
+          | {:publish_handler, module}
+          | {:disconnect_handler, module}
+          | {:host, binary}
+          | {:hosts, [{binary, :inet.port_number()}]}
+          | {:port, :inet.port_number()}
+          | {:tcp_opts, [:gen_tcp.option()]}
+          | {:ssl, boolean}
+          | {:ssl_opts, [:ssl.ssl_option()]}
+          | {:ws_path, binary}
+          | {:connect_timeout, pos_integer}
+          | {:bridge_mode, boolean}
+          | {:client_id, iodata}
+          | {:clean_start, boolean}
+          | {:username, iodata}
+          | {:password, iodata}
+          | {:protocol_version, 3 | 4 | 5}
+          | {:keepalive, non_neg_integer}
+          | {:max_inflight, pos_integer}
+          | {:retry_interval, timeout}
+          | {:will_topic, iodata}
+          | {:will_payload, iodata}
+          | {:will_retain, boolean}
+          | {:will_qos, pos_integer}
+          | {:will_props, %{atom => term}}
+          | {:auto_ack, boolean}
+          | {:ack_timeout, pos_integer}
+          | {:force_ping, boolean}
+          | {:properties, %{atom => term}}
+          | {:reconnect, boolean}
+          | {:subscriptions, [{topic :: binary, qos :: non_neg_integer}]}
+          | {:start_when, {mfa, retry_in :: non_neg_integer}}
+        ]
 
   @opt_keys [
     :name,
@@ -283,7 +291,9 @@ defmodule ExMQTT do
 
   @impl ExMQTT.DisconnectHandler
   def handle_disconnect({reason_code, properties}, _arg) do
-    Logger.warn("[ExMQTT] Disconnect received: reason #{reason_code}, properties: #{inspect(properties)}")
+    Logger.warn(
+      "[ExMQTT] Disconnect received: reason #{reason_code}, properties: #{inspect(properties)}"
+    )
 
     :ok
   end
