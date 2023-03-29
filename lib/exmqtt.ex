@@ -111,17 +111,25 @@ defmodule ExMQTT do
 
   ## Async
 
+  def publish(name \\ __MODULE__, message, topic, qos)
+
   def publish(name, message, topic, qos) do
     GenServer.cast(name, {:publish, message, topic, qos})
   end
+
+  def subscribe(name \\ __MODULE__, topic, qos)
 
   def subscribe(name, topic, qos) do
     GenServer.cast(name, {:subscribe, topic, qos})
   end
 
+  def unsubscribe(name \\ __MODULE__, topic)
+
   def unsubscribe(name, topic) do
     GenServer.cast(name, {:unsubscribe, topic})
   end
+
+  def disconnect(name \\ __MODULE__)
 
   def disconnect(name) do
     GenServer.cast(name, :disconnect)
@@ -129,17 +137,25 @@ defmodule ExMQTT do
 
   ## Sync
 
+  def publish_sync(name \\ __MODULE__, message, topic, qos)
+
   def publish_sync(name, message, topic, qos) do
     GenServer.call(name, {:publish, message, topic, qos})
   end
+
+  def subscribe_sync(name \\ __MODULE__, topic, qos)
 
   def subscribe_sync(name, topic, qos) do
     GenServer.call(name, {:subscribe, topic, qos})
   end
 
+  def unsubscribe_sync(name \\ __MODULE__, topic)
+
   def unsubscribe_sync(name, topic) do
     GenServer.call(name, {:unsubscribe, topic})
   end
+
+  def disconnect_sync(name \\ __MODULE__)
 
   def disconnect_sync(name) do
     GenServer.call(name, :disconnect)
