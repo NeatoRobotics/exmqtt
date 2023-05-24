@@ -223,8 +223,8 @@ defmodule ExMQTT do
 
       {:error, _reason} ->
         delay = retry_delay(2000, 60_000, attempt)
-        Logger.debug("[ExMQTT] Unable to connect, retrying in #{delay} ms")
-        :timer.sleep(delay)
+        Logger.debug("[ExMQTT] Unable to connect, retrying in #{delay} ms (#{attempt})")
+        Process.sleep(delay)
         {:noreply, state, {:continue, {:connect, attempt + 1}}}
     end
   end
@@ -349,6 +349,7 @@ defmodule ExMQTT do
 
     with(
       {:ok, conn_pid} when is_pid(conn_pid) <- :emqtt.start_link(opts),
+      true <- Process.unlink(conn_pid),
       {:ok, _props} <- :emqtt.connect(conn_pid)
     ) do
       Logger.debug("[ExMQTT] Connected #{inspect(conn_pid)}")
@@ -422,19 +423,12 @@ defmodule ExMQTT do
   end
 
   defp retry_delay(initial_delay, max_delay, attempt) when attempt < 1000 do
-    temp = min(max_delay, pow(initial_delay * 2, attempt))
-    temp / 2 + Enum.random([0, temp / 2])
+    min(max_delay, initial_delay * attempt)
   end
 
   defp retry_delay(_initial_delay, max_delay, _attempt) do
     max_delay
   end
-
-  # Integer powers:
-  # https://stackoverflow.com/a/44065965/2066155
-  defp pow(n, k), do: pow(n, k, 1)
-  defp pow(_, 0, acc), do: acc
-  defp pow(n, k, acc), do: pow(n, k - 1, n * acc)
 
   # emqtt has some odd opt names and some erlang types that we'll want to
   # redefine but then map to emqtt expected format.
