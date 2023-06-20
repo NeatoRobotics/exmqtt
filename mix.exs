@@ -4,8 +4,8 @@ defmodule ExMQTT.MixProject do
   def project do
     [
       app: :exmqtt,
-      version: "0.1.4",
-      elixir: "~> 1.14.1",
+      version: "0.1.5",
+      elixir: "~> 1.14",
       description: "An Elixir wrapper for erlang emqtt lib",
       package: package(),
       start_permanent: Mix.env() == :prod,

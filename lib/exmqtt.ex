@@ -223,7 +223,7 @@ defmodule ExMQTT do
 
       {:error, _reason} ->
         delay = retry_delay(2000, 60_000, attempt)
-        Logger.debug("[ExMQTT] Unable to connect, retrying in #{delay} ms (#{attempt})")
+        Logger.info("[ExMQTT] Unable to connect, retrying in #{delay} ms (#{attempt})")
         Process.sleep(delay)
         {:noreply, state, {:continue, {:connect, attempt + 1}}}
     end
@@ -343,7 +343,7 @@ defmodule ExMQTT do
   # ----------------------------------------------------------------------------
 
   defp connect(%State{} = state) do
-    Logger.debug("[ExMQTT] Connecting to #{state.opts[:host]}:#{state.opts[:port]}")
+    Logger.info("[ExMQTT] Connecting to #{state.opts[:host]}:#{state.opts[:port]}")
 
     opts = map_opts(state.opts)
 
@@ -352,7 +352,7 @@ defmodule ExMQTT do
       true <- Process.unlink(conn_pid),
       {:ok, _props} <- :emqtt.connect(conn_pid)
     ) do
-      Logger.debug("[ExMQTT] Connected #{inspect(conn_pid)}")
+      Logger.info("[ExMQTT] Connected #{inspect(conn_pid)}")
       {:ok, %State{state | conn_pid: conn_pid}}
     else
       {:error, reason} when is_atom(reason) ->
@@ -380,7 +380,7 @@ defmodule ExMQTT do
   defp sub(%State{} = state, topic, qos) do
     case :emqtt.subscribe(state.conn_pid, {topic, qos}) do
       {:ok, _props, [reason_code]} when reason_code in [0x00, 0x01, 0x02] ->
-        Logger.debug("[ExMQTT] Subscribed to #{topic} @ QoS #{qos}")
+        Logger.info("[ExMQTT] Subscribed to #{topic} @ QoS #{qos}")
         :ok
 
       {:ok, _props, reason_codes} ->
@@ -395,7 +395,7 @@ defmodule ExMQTT do
   defp unsub(%State{} = state, topic) do
     case :emqtt.unsubscribe(state.conn_pid, topic) do
       {:ok, _props, [0x00]} ->
-        Logger.debug("[ExMQTT] Unsubscribed from #{topic}")
+        Logger.info("[ExMQTT] Unsubscribed from #{topic}")
         :ok
 
       {:ok, _props, reason_codes} ->
