@@ -19,7 +19,8 @@ defmodule ExMQTT do
       :message_handler,
       :opts,
       :protocol_version,
-      :subscriptions
+      :subscriptions,
+      :start_when
     ]
   end
 
@@ -190,7 +191,8 @@ defmodule ExMQTT do
       protocol_version: opts[:protocol_version],
       subscriptions: subscriptions,
       username: opts[:username],
-      opts: [{:msg_handler, handler_functions} | opts]
+      opts: [{:msg_handler, handler_functions} | opts],
+      start_when: start_when
     }
 
     {:ok, state, {:continue, {:start_when, start_when}}}
@@ -201,6 +203,11 @@ defmodule ExMQTT do
   @impl GenServer
 
   def handle_continue({:start_when, :now}, state) do
+    {:noreply, state, {:continue, {:connect, 0}}}
+  end
+
+  def handle_continue({:start_when, start_when}, state) when is_integer(start_when) do
+    Process.sleep(start_when)
     {:noreply, state, {:continue, {:connect, 0}}}
   end
 
@@ -298,6 +305,15 @@ defmodule ExMQTT do
     {:noreply, state}
   end
 
+  def handle_info({:EXIT, pid, _}, %State{start_when: start_when} = state) do
+    if pid == state.conn_pid do
+      Logger.warn("[ExMQTT] emqtt died, retrying clean connection")
+      {:noreply, %{state | conn_pid: nil}, {:continue, {:start_when, start_when}}}
+    else
+      {:noreply, state}
+    end
+  end
+
   def handle_info(msg, state) do
     Logger.warn("[ExMQTT] Unhandled message #{inspect(msg)}")
     {:noreply, state}
@@ -349,7 +365,7 @@ defmodule ExMQTT do
 
     with(
       {:ok, conn_pid} when is_pid(conn_pid) <- :emqtt.start_link(opts),
-      true <- Process.unlink(conn_pid),
+      Process.flag(:trap_exit, true),
       {:ok, _props} <- :emqtt.connect(conn_pid)
     ) do
       Logger.info("[ExMQTT] Connected #{inspect(conn_pid)}")
@@ -406,6 +422,8 @@ defmodule ExMQTT do
 
   defp dc(%State{} = state) do
     :ok = :emqtt.disconnect(state.conn_pid)
+  catch
+    :exit, _ -> :ok
   end
 
   ## Utility
